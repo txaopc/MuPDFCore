@@ -602,7 +602,7 @@ namespace PDFViewerDemo
                     Watcher.EnableRaisingEvents = false;
                 }
 
-                this.FindControl<PDFRenderer>("MuPDFRenderer").ZoomEnabled = false;
+                this.FindControl<PDFRenderer>("MuPDFRenderer").ZoomEnabled = true;
                 this.FindControl<PDFRenderer>("MuPDFRenderer").PageNavigationEnabled = true;
             }
         }

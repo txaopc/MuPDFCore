@@ -1448,25 +1448,36 @@ namespace MuPDFCore.MuPDFRenderer
         {
             Debug.WriteLine($"Zoom: {this.Zoom} ({e.Delta.Y})");
             
+            // Check if Ctrl key is pressed
+            bool isCtrlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+            
             if (PageNavigationEnabled)
             {
-                // Use mouse wheel for page navigation
-                if (e.Delta.Y > 0)
+                if (isCtrlPressed && ZoomEnabled)
                 {
-                    // Scroll up = previous page
-                    GoToPreviousPage();
+                    // Ctrl + mouse wheel = zooming
+                    ZoomStep(e.Delta.Y, e.GetPosition(this));
                 }
-                else if (e.Delta.Y < 0)
+                else
                 {
-                    // Scroll down = next page
-                    GoToNextPage();
+                    // Mouse wheel alone = page navigation
+                    if (e.Delta.Y > 0)
+                    {
+                        // Scroll up = previous page
+                        GoToPreviousPage();
+                    }
+                    else if (e.Delta.Y < 0)
+                    {
+                        // Scroll down = next page
+                        GoToNextPage();
+                    }
                 }
             }
-            else if (ZoomEnabled)
-            {
-                // Use mouse wheel for zooming (default behavior)
-                ZoomStep(e.Delta.Y, e.GetPosition(this));
-            }
+            //else if (ZoomEnabled)
+            //{
+            //    // Use mouse wheel for zooming (default behavior when page navigation is disabled)
+            //    ZoomStep(e.Delta.Y, e.GetPosition(this));
+            //}
         }
 
         /// <summary>
