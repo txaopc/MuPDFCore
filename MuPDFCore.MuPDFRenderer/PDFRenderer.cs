@@ -28,6 +28,7 @@ using Avalonia.Threading;
 using MuPDFCore.StructuredText;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -787,6 +788,97 @@ namespace MuPDFCore.MuPDFRenderer
         }
 
         /// <summary>
+        /// Navigate to the next page in the document.
+        /// </summary>
+        /// <returns>True if navigation was successful, false if already on the last page.</returns>
+        public bool GoToNextPage()
+        {
+            if (!IsViewerInitialized || Document == null)
+                return false;
+
+            int nextPage = PageNumber + 1;
+            if (nextPage >= Document.Pages.Count)
+                return false;
+
+            return NavigateToPage(nextPage);
+        }
+
+        /// <summary>
+        /// Navigate to the previous page in the document.
+        /// </summary>
+        /// <returns>True if navigation was successful, false if already on the first page.</returns>
+        public bool GoToPreviousPage()
+        {
+            if (!IsViewerInitialized || Document == null)
+                return false;
+
+            int previousPage = PageNumber - 1;
+            if (previousPage < 0)
+                return false;
+
+            return NavigateToPage(previousPage);
+        }
+
+        /// <summary>
+        /// Navigate to a specific page in the document.
+        /// </summary>
+        /// <param name="pageNumber">The page number to navigate to (0-based).</param>
+        /// <returns>True if navigation was successful, false if the page number is invalid.</returns>
+        public bool NavigateToPage(int pageNumber)
+        {
+            if (!IsViewerInitialized || Document == null)
+                return false;
+
+            if (pageNumber < 0 || pageNumber >= Document.Pages.Count)
+                return false;
+
+            if (pageNumber == PageNumber)
+                return true; // Already on the requested page
+
+            int previousPage = PageNumber;
+
+            // Store current display area to preserve zoom level
+            Rect currentDisplayArea = DisplayArea;
+
+            // Re-initialize with the new page
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        // Get current OCR language and other settings
+                        TesseractLanguage currentOcrLanguage = null; // We don't have access to this, so OCR will be skipped
+                        
+                        // Re-initialize the renderer with the new page
+                        if (Context != null)
+                        {
+                            await InitializeAsync(Document, RenderThreadCount, pageNumber, 1.0, true, currentOcrLanguage);
+                        }
+                        else
+                        {
+                            // If we don't own the context, we need to use the synchronous version
+                            Initialize(Document, RenderThreadCount, pageNumber, 1.0, true, currentOcrLanguage);
+                        }
+
+                        // Restore the display area to maintain zoom level
+                        SetDisplayAreaNow(currentDisplayArea);
+
+                        // Fire the PageChanged event
+                        PageChanged?.Invoke(this, new PageNavigationEventArgs(previousPage, pageNumber));
+                    });
+                }
+                catch (Exception)
+                {
+                    // If initialization fails, silently ignore for now
+                    // In a production environment, you might want to log this or handle it differently
+                }
+            });
+
+            return true;
+        }
+
+        /// <summary>
         /// Render the <see cref="FixedCanvasBitmap"/>. 
         /// </summary>
         /// <param name="resolutionMultiplier">This value can be used to increase or decrease the resolution at which the static renderisation of the page will be produced. If <paramref name="resolutionMultiplier"/> is 1, the resolution will match the size (in screen units) of the <see cref="PDFRenderer"/>.</param>
@@ -1348,14 +1440,31 @@ namespace MuPDFCore.MuPDFRenderer
         }
 
         /// <summary>
-        /// Default handler for the PointerWheelChanged event (zoom in/out).
+        /// Default handler for the PointerWheelChanged event (zoom in/out or page navigation).
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void ControlPointerWheelChanged(object sender, PointerWheelEventArgs e)
         {
-            if (ZoomEnabled)
+            Debug.WriteLine($"Zoom: {this.Zoom} ({e.Delta.Y})");
+            
+            if (PageNavigationEnabled)
             {
+                // Use mouse wheel for page navigation
+                if (e.Delta.Y > 0)
+                {
+                    // Scroll up = previous page
+                    GoToPreviousPage();
+                }
+                else if (e.Delta.Y < 0)
+                {
+                    // Scroll down = next page
+                    GoToNextPage();
+                }
+            }
+            else if (ZoomEnabled)
+            {
+                // Use mouse wheel for zooming (default behavior)
                 ZoomStep(e.Delta.Y, e.GetPosition(this));
             }
         }

@@ -490,6 +490,7 @@ namespace PDFViewerDemo
 
                 //Restore the DisplayArea.
                 this.FindControl<PDFRenderer>("MuPDFRenderer").SetDisplayAreaNow(displayArea);
+                
 
                 Watcher.EnableRaisingEvents = true;
             });
@@ -600,6 +601,9 @@ namespace PDFViewerDemo
                 {
                     Watcher.EnableRaisingEvents = false;
                 }
+
+                this.FindControl<PDFRenderer>("MuPDFRenderer").ZoomEnabled = false;
+                this.FindControl<PDFRenderer>("MuPDFRenderer").PageNavigationEnabled = true;
             }
         }
 

@@ -293,6 +293,19 @@ namespace MuPDFCore.MuPDFRenderer
         }
 
         /// <summary>
+        /// Defines the <see cref="PageNavigationEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> PageNavigationEnabledProperty = AvaloniaProperty.Register<PDFRenderer, bool>(nameof(PageNavigationEnabled), false);
+        /// <summary>
+        /// Whether the default handlers for pointer wheel events should be used for page navigation instead of zooming. When this is true, <see cref="ZoomEnabled"/> is ignored.
+        /// </summary>
+        public bool PageNavigationEnabled
+        {
+            get { return GetValue(PageNavigationEnabledProperty); }
+            set { SetValue(PageNavigationEnabledProperty, value); }
+        }
+
+        /// <summary>
         /// Defines the <see cref="Selection"/> property.
         /// </summary>
         public static readonly StyledProperty<MuPDFStructuredTextAddressSpan> SelectionProperty = AvaloniaProperty.Register<PDFRenderer, MuPDFStructuredTextAddressSpan>(nameof(Selection), null);
@@ -386,7 +399,7 @@ namespace MuPDFCore.MuPDFRenderer
         /// <summary>
         /// Defines the <see cref="ActivateLinks"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> ActivateLinksProperty = AvaloniaProperty.Register<PDFRenderer, bool>(nameof(ActivateLinks), true);
+        public static readonly StyledProperty<bool> ActivateLinksProperty = AvaloniaProperty.Register<PDFRenderer, bool>(nameof(ActivateLinks), false);
         /// <summary>
         /// Determines whether links on the document can be clicked.
         /// </summary>
@@ -400,6 +413,11 @@ namespace MuPDFCore.MuPDFRenderer
         /// Fired when the user clicks on a link within the document.
         /// </summary>
         public event EventHandler<MupdfLinkClickedEventArgs> LinkClicked;
+
+        /// <summary>
+        /// Fired when the page number changes due to navigation.
+        /// </summary>
+        public event EventHandler<PageNavigationEventArgs> PageChanged;
     }
 
     /// <summary>
@@ -419,6 +437,33 @@ namespace MuPDFCore.MuPDFRenderer
         public MupdfLinkClickedEventArgs(MuPDFLinkDestination linkDestination)
         {
             LinkDestination = linkDestination;
+        }
+    }
+
+    /// <summary>
+    /// <see cref="EventArgs"/> for the <see cref="PDFRenderer.PageChanged"/> event.
+    /// </summary>
+    public class PageNavigationEventArgs : EventArgs
+    {
+        /// <summary>
+        /// The previous page number.
+        /// </summary>
+        public int PreviousPageNumber { get; }
+
+        /// <summary>
+        /// The new page number.
+        /// </summary>
+        public int NewPageNumber { get; }
+
+        /// <summary>
+        /// Create a new <see cref="PageNavigationEventArgs"/> instance.
+        /// </summary>
+        /// <param name="previousPageNumber">The previous page number.</param>
+        /// <param name="newPageNumber">The new page number.</param>
+        public PageNavigationEventArgs(int previousPageNumber, int newPageNumber)
+        {
+            PreviousPageNumber = previousPageNumber;
+            NewPageNumber = newPageNumber;
         }
     }
 }

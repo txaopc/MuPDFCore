@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -13,7 +13,9 @@
     <PackageReference Include="Avalonia" Version="11.0.11" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.11" />
     <PackageReference Include="Avalonia.Themes.Simple" Version="11.0.11" />
-    <PackageReference Include="MuPDFCore.MuPDFRenderer" Version="2.0.1" />
     <PackageReference Include="VectSharp.PDF" Version="3.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MuPDFCore.MuPDFRenderer\MuPDFCore.MuPDFRenderer.csproj" />
   </ItemGroup>
 </Project>
