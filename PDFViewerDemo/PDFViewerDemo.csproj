@@ -9,10 +9,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+	</ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.11" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.11" />
     <PackageReference Include="Avalonia.Themes.Simple" Version="11.0.11" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="VectSharp.PDF" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>

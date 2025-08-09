@@ -1,6 +1,22 @@
 ﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:PDFViewerDemo.ViewModels"
+			 x:DataType="vm:ApplicationViewModel"
              x:Class="PDFViewerDemo.App">
+	<TrayIcon.Icons>
+		<TrayIcons>
+			<TrayIcon Icon="/Assets/avalonia-logo.ico" ToolTipText="Avalonia Tray Icon">
+				<TrayIcon.Menu>
+					<NativeMenu>
+						<NativeMenuItem Header="Open" Command="{Binding OpenWindowCommand}" />
+						<NativeMenuItem Header="Settings" />
+						<NativeMenuItemSeparator />
+						<NativeMenuItem Header="Exit" Command="{Binding ExitCommand}" />
+					</NativeMenu>
+				</TrayIcon.Menu>
+			</TrayIcon>
+		</TrayIcons>
+	</TrayIcon.Icons>
     <Application.Styles>
 		<SimpleTheme />
     </Application.Styles>

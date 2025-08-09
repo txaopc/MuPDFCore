@@ -22,6 +22,7 @@ using Avalonia.Platform.Storage;
 using MuPDFCore.StructuredText;
 using System.Text.Json.Serialization;
 using System.Reflection.Emit;
+using System.Diagnostics;
 
 namespace PDFViewerDemo
 {
@@ -101,6 +102,9 @@ namespace PDFViewerDemo
         /// </summary>
         private Rect MouseDownDisplayArea;
 
+        private Canvas _overlayCanvas;
+        private List<(Rectangle Rect, Border Border)> _signatureBorders = new List<(Rectangle, Border)>();
+
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -142,6 +146,7 @@ namespace PDFViewerDemo
                     UpdatingZoomFromRenderer = false;
                 }
             };
+            _overlayCanvas = this.FindControl<Canvas>("OverlayCanvas");
         }
 
         private void InitializeComponent()
@@ -521,7 +526,7 @@ namespace PDFViewerDemo
 
                 //Create a new document and initialise the PDFRenderer with it.
                 Document = new MuPDFDocument(Context, localPath);
-
+                
                 //Reset the cached user password.
                 UserPassword = null;
 
@@ -602,8 +607,46 @@ namespace PDFViewerDemo
                     Watcher.EnableRaisingEvents = false;
                 }
 
+
+                // Test code to create a signature border
+                try
+                {
+                    var pixelRect = new Rectangle
+                    {
+                        X0 = 12,
+                        Y0 = 12,
+                        X1 = 117,
+                        Y1 = 117,
+                    };
+
+                    // Tạo Border đỏ
+                    var border = new Border
+                    {
+                        BorderBrush = Brushes.Red,
+                        BorderThickness = new Thickness(1),
+                        Width = 105,
+                        Height = 105,
+                        IsVisible = true // Ẩn mặc định
+                    };
+                    Canvas.SetLeft(border, 12);
+                    Canvas.SetTop(border, 12);
+                    _overlayCanvas.Children.Add(border);
+
+                    _signatureBorders.Add((pixelRect, border));
+                }
+                catch (MuPDFException ex)
+                {
+                    // Xử lý lỗi, ví dụ: yêu cầu mật khẩu
+                    // Có thể hiển thị PasswordWindow như trong demo
+                }
+                // End of test code
+
+                this.FindControl<PDFRenderer>("MuPDFRenderer").SetFilePath(localPath);
+
                 this.FindControl<PDFRenderer>("MuPDFRenderer").ZoomEnabled = true;
                 this.FindControl<PDFRenderer>("MuPDFRenderer").PageNavigationEnabled = true;
+                this.FindControl<PDFRenderer>("MuPDFRenderer").EnableSignatureDetection = true;
+                this.FindControl<PDFRenderer>("MuPDFRenderer").DrawSignatureFields = true;
             }
         }
 

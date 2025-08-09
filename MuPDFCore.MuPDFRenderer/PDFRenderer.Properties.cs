@@ -410,6 +410,58 @@ namespace MuPDFCore.MuPDFRenderer
         }
 
         /// <summary>
+        /// Defines the <see cref="EnableSignatureDetection"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> EnableSignatureDetectionProperty = AvaloniaProperty.Register<PDFRenderer, bool>(nameof(EnableSignatureDetection), false);
+        /// <summary>
+        /// Determines whether signature fields should be detected and made interactive.
+        /// </summary>
+        public bool EnableSignatureDetection
+        {
+            get { return GetValue(EnableSignatureDetectionProperty); }
+            set { SetValue(EnableSignatureDetectionProperty, value); }
+        }
+
+        /// <summary>
+        /// Defines the <see cref="SignatureFieldBrush"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> SignatureFieldBrushProperty = AvaloniaProperty.Register<PDFRenderer, IBrush>(nameof(SignatureFieldBrush), null);
+        /// <summary>
+        /// The colour used to fill signature field rectangles when hovered.
+        /// </summary>
+        public IBrush SignatureFieldBrush
+        {
+            get { return GetValue(SignatureFieldBrushProperty); }
+            set { SetValue(SignatureFieldBrushProperty, value); }
+        }
+
+        /// <summary>
+        /// Defines the <see cref="SignatureFieldPen"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IPen> SignatureFieldPenProperty = AvaloniaProperty.Register<PDFRenderer, IPen>(nameof(SignatureFieldPen), new Pen(Color.FromRgb(255, 0, 0).ToUInt32(), 2));
+        /// <summary>
+        /// The pen used to draw signature field rectangles when hovered.
+        /// </summary>
+        public IPen SignatureFieldPen
+        {
+            get { return GetValue(SignatureFieldPenProperty); }
+            set { SetValue(SignatureFieldPenProperty, value); }
+        }
+
+        /// <summary>
+        /// Defines the <see cref="DrawSignatureFields"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> DrawSignatureFieldsProperty = AvaloniaProperty.Register<PDFRenderer, bool>(nameof(DrawSignatureFields), true);
+        /// <summary>
+        /// Determines whether signature fields are highlighted when hovered.
+        /// </summary>
+        public bool DrawSignatureFields
+        {
+            get { return GetValue(DrawSignatureFieldsProperty); }
+            set { SetValue(DrawSignatureFieldsProperty, value); }
+        }
+
+        /// <summary>
         /// Fired when the user clicks on a link within the document.
         /// </summary>
         public event EventHandler<MupdfLinkClickedEventArgs> LinkClicked;
@@ -418,6 +470,82 @@ namespace MuPDFCore.MuPDFRenderer
         /// Fired when the page number changes due to navigation.
         /// </summary>
         public event EventHandler<PageNavigationEventArgs> PageChanged;
+
+        /// <summary>
+        /// Fired when the user clicks on a signature field within the document.
+        /// </summary>
+        public event EventHandler<SignatureFieldClickedEventArgs> SignatureFieldClicked;
+    }
+
+    /// <summary>
+    /// Represents information about a signature field in the PDF document.
+    /// </summary>
+    public class SignatureFieldInfo
+    {
+        /// <summary>
+        /// The name of the signature field.
+        /// </summary>
+        public string FieldName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The rectangle area of the signature field in page coordinates.
+        /// </summary>
+        public Rect Rectangle { get; set; }
+
+        /// <summary>
+        /// The page number where the signature field is located (0-based).
+        /// </summary>
+        public int PageNumber { get; set; }
+
+        /// <summary>
+        /// Whether the signature field is signed.
+        /// </summary>
+        public bool IsSigned { get; set; }
+
+        /// <summary>
+        /// The signer's name (if available).
+        /// </summary>
+        public string? SignerName { get; set; }
+
+        /// <summary>
+        /// The signing date (if available).
+        /// </summary>
+        public DateTime? SigningDate { get; set; }
+
+        /// <summary>
+        /// The reason for signing (if available).
+        /// </summary>
+        public string? Reason { get; set; }
+
+        /// <summary>
+        /// The location of signing (if available).
+        /// </summary>
+        public string? Location { get; set; }
+
+        /// <summary>
+        /// Whether the signature is valid.
+        /// </summary>
+        public bool? IsValid { get; set; }
+    }
+
+    /// <summary>
+    /// <see cref="EventArgs"/> for the <see cref="PDFRenderer.SignatureFieldClicked"/> event.
+    /// </summary>
+    public class SignatureFieldClickedEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Information about the clicked signature field.
+        /// </summary>
+        public SignatureFieldInfo SignatureField { get; }
+
+        /// <summary>
+        /// Create a new <see cref="SignatureFieldClickedEventArgs"/> instance.
+        /// </summary>
+        /// <param name="signatureField">Information about the clicked signature field.</param>
+        public SignatureFieldClickedEventArgs(SignatureFieldInfo signatureField)
+        {
+            SignatureField = signatureField;
+        }
     }
 
     /// <summary>

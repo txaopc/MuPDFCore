@@ -6,10 +6,10 @@
         xmlns:local="clr-namespace:PDFViewerDemo;assembly=PDFViewerDemo"
         xmlns:anim="clr-namespace:Avalonia.Animation;assembly=MuPDFCore.MuPDFRenderer"
         mc:Ignorable="d" Width="800" Height="700"
-        MinWidth="300" MinHeight="100"
+        MinWidth="300" MinHeight="100" WindowState="Maximized"
         x:Class="PDFViewerDemo.MainWindow"
         Title="PDF Viewer" Opened="WindowOpened" FontSize="16" Name="ParentWindow"
-        Closed="WindowClosed" KeyDown="WindowKeyDown">
+        Closed="WindowClosed" KeyDown="WindowKeyDown" IsVisible="False">
 	<Grid Margin="10" Name="MainGrid">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*" />
@@ -71,17 +71,21 @@
 		</Grid>
 
 		<GridSplitter Grid.Column="1" Width="10" Background="White" Name="LeftPanelGridSplitter"></GridSplitter>
-
-		<!--The PDF renderer.-->
-		<mupdf:PDFRenderer Name="MuPDFRenderer" Background="#F0F0F0" PageBackground="White" PropertyChanged="RendererPropertyChanged" ZoomIncrement="1.75" ClipToBounds="True" Grid.Column="2" LinkClicked="PDFRenderer_LinkClicked">
-			<!--Fancy transition so that we can zoom or pan around smoothly. Disabling this would result in better performance, though.-->
-			<mupdf:PDFRenderer.Transitions>
-				<Transitions>
-					<anim:RectTransition Property="DisplayArea" Duration="0:0:0:0.1" />
-				</Transitions>
-			</mupdf:PDFRenderer.Transitions>
-		</mupdf:PDFRenderer>
-
+		<Grid Grid.Column="2">
+			<!--The PDF renderer.-->
+			<mupdf:PDFRenderer Name="MuPDFRenderer" Background="#F0F0F0" PageBackground="White" PropertyChanged="RendererPropertyChanged" ZoomIncrement="1.75" ClipToBounds="True" LinkClicked="PDFRenderer_LinkClicked">
+				<!--Fancy transition so that we can zoom or pan around smoothly. Disabling this would result in better performance, though.-->
+				<mupdf:PDFRenderer.Transitions>
+					<Transitions>
+						<anim:RectTransition Property="DisplayArea" Duration="0:0:0:0.1" />
+					</Transitions>
+				</mupdf:PDFRenderer.Transitions>
+			</mupdf:PDFRenderer>
+			<Canvas Name="OverlayCanvas">
+				<!-- Khung đỏ sẽ được thêm động vào đây -->
+			</Canvas>
+		</Grid>
+		
 		<!--Various controls-->
 		<ScrollViewer Grid.Column="3" Margin="10, 0, 0, 0" Padding="0,0,10,0" VerticalScrollBarVisibility="Visible">
 			<Grid Name="ControlsGrid">

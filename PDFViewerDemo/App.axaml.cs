@@ -1,6 +1,8 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using PDFViewerDemo.ViewModels;
 
 namespace PDFViewerDemo
 {
@@ -15,7 +17,8 @@ namespace PDFViewerDemo
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
+                desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                DataContext = new ApplicationViewModel();
             }
 
             base.OnFrameworkInitializationCompleted();

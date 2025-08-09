@@ -25,6 +25,11 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using iText.Forms;
+using iText.Forms.Fields;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Annot;
+using iText.Signatures;
 using MuPDFCore.StructuredText;
 using System;
 using System.Collections.Generic;
@@ -35,6 +40,12 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using AvaloniaLineSegment = Avalonia.Media.LineSegment;
+using AvaloniaPoint = Avalonia.Point;
+using AvaloniaRect = Avalonia.Rect;
+using AvaloniaVector = Avalonia.Vector;
+using iTextPoint = iText.Kernel.Geom.Point;
+using iTextRectangle = iText.Kernel.Geom.Rectangle;
 
 namespace MuPDFCore.MuPDFRenderer
 {
@@ -179,6 +190,26 @@ namespace MuPDFCore.MuPDFRenderer
         protected List<Quad> HighlightQuads;
 
         /// <summary>
+        /// A list of signature fields detected in the current document.
+        /// </summary>
+        private List<SignatureFieldInfo> SignatureFields;
+
+        /// <summary>
+        /// The file path of the currently loaded document (used for signature detection).
+        /// </summary>
+        private string CurrentDocumentPath;
+
+        /// <summary>
+        /// The byte array of the currently loaded document (used for signature detection when loaded from memory).
+        /// </summary>
+        private byte[] CurrentDocumentBytes;
+
+        /// <summary>
+        /// The currently hovered signature field (if any).
+        /// </summary>
+        private SignatureFieldInfo HoveredSignatureField;
+
+        /// <summary>
         /// Defines the current mouse operation.
         /// </summary>
         private enum CurrentMouseOperations
@@ -319,6 +350,10 @@ namespace MuPDFCore.MuPDFRenderer
             Context = new MuPDFContext();
             Document = new MuPDFDocument(Context, fileName);
 
+            // Store document path for signature detection
+            CurrentDocumentPath = fileName;
+            CurrentDocumentBytes = null;
+
             ContinueInitialization(threadCount, pageNumber, resolutionMultiplier, includeAnnotations, ocrLanguage);
         }
 
@@ -344,6 +379,10 @@ namespace MuPDFCore.MuPDFRenderer
 
             Context = new MuPDFContext();
             Document = new MuPDFDocument(Context, fileName);
+
+            // Store document path for signature detection
+            CurrentDocumentPath = fileName;
+            CurrentDocumentBytes = null;
 
             await ContinueInitializationAsync(threadCount, pageNumber, resolutionMultiplier, includeAnnotations, ocrLanguage, ocrCancellationToken, ocrProgress);
         }
@@ -610,6 +649,8 @@ namespace MuPDFCore.MuPDFRenderer
             SetDisplayAreaNowInternal(new Rect(new Point(-(containingWidth - FixedArea.Width) * 0.5, -(containingHeight - FixedArea.Height) * 0.5), new Avalonia.Size(containingWidth, containingHeight)));
             this._Zoom = this.Bounds.Width / DisplayArea.Width * 72 / 96 * (VisualRoot as ILayoutRoot).LayoutScaling;
 
+            //// Detect signature fields if enabled
+            //DetectSignatureFields();
             //We are ready!
             IsViewerInitialized = true;
 
@@ -876,6 +917,119 @@ namespace MuPDFCore.MuPDFRenderer
             });
 
             return true;
+        }
+
+        public void SetFilePath(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
+            }
+            CurrentDocumentPath = filePath;
+            CurrentDocumentBytes = null; // Clear bytes if path is set
+            DetectSignatureFields();
+        }
+        /// <summary>
+        /// Detects signature fields in the PDF document using iText.
+        /// </summary>
+        private void DetectSignatureFields()
+        {
+            if (!EnableSignatureDetection)
+            {
+                SignatureFields = null;
+                return;
+            }
+
+            SignatureFields = new List<SignatureFieldInfo>();
+
+            try
+            {
+                PdfDocument pdfDoc = null;
+
+                // Try to open the PDF using iText
+                if (!string.IsNullOrEmpty(CurrentDocumentPath))
+                {
+                    pdfDoc = new PdfDocument(new PdfReader(CurrentDocumentPath));
+                }
+                else if (CurrentDocumentBytes != null)
+                {
+                    pdfDoc = new PdfDocument(new PdfReader(new MemoryStream(CurrentDocumentBytes)));
+                }
+                else
+                {
+                    return; // No document data available
+                }
+
+                using (pdfDoc)
+                {
+                    SignatureUtil signatureUtil = new SignatureUtil(pdfDoc);
+                    IList<String> names = signatureUtil.GetSignatureNames();
+                    PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, false);
+                    if (form != null)
+                    {
+                        for (int k = 0; k < names.Count; ++k)
+                        {
+                            String name = names[k];
+
+                            IList<PdfWidgetAnnotation> widgets = form.GetField(name).GetWidgets();
+                            if (widgets != null && widgets.Count > 0)
+                            {
+                                iText.Kernel.Geom.Rectangle pos = widgets[0].GetRectangle().ToRectangle();
+                                int pageNum = pdfDoc.GetPageNumber(widgets[0].GetPage());
+
+                                var pageRect = pdfDoc.GetPage(pageNum).GetPageSize();
+
+                                var rect = new AvaloniaRect(pos.GetLeft(), pageRect.GetHeight() - pos.GetTop(), pos.GetWidth(), pos.GetHeight());
+                                var signatureInfo = new SignatureFieldInfo
+                                {
+                                    FieldName = name,
+                                    PageNumber = pageNum,
+                                    Rectangle = rect,
+                                    IsSigned = true
+                                };
+                                SignatureFields.Add(signatureInfo);
+                                Debug.WriteLine($"Detected signature field: {name} on page {pageNum} at {rect}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // If signature detection fails, just continue without signature fields
+                SignatureFields = null;
+            }
+        }
+
+        /// <summary>
+        /// Checks if a point is over a signature field on the current page.
+        /// </summary>
+        /// <param name="point">The point to check in page coordinates.</param>
+        /// <returns>The signature field info if found, null otherwise.</returns>
+        private SignatureFieldInfo GetSignatureFieldAtPoint(AvaloniaPoint point)
+        {
+            if (SignatureFields == null || !EnableSignatureDetection)
+                return null;
+
+            
+            // Convert screen coordinates to page coordinates
+            double pageX = point.X / this.Bounds.Width * DisplayArea.Width + DisplayArea.Left;
+            double pageY = point.Y / this.Bounds.Height * DisplayArea.Height + DisplayArea.Top;
+
+            foreach (var field in SignatureFields)
+            {
+                if (field.PageNumber == PageNumber + 1)
+                {
+                    // Check if point is within the signature field rectangle
+                    if (pageX >= field.Rectangle.Left && pageX <= field.Rectangle.Right &&
+                        pageY >= field.Rectangle.Top && pageY <= field.Rectangle.Bottom)
+                    {
+                        return field;
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -1349,13 +1503,15 @@ namespace MuPDFCore.MuPDFRenderer
         /// <param name="e"></param>
         private void ControlPointerMoved(object sender, PointerEventArgs e)
         {
+            Point point = e.GetPosition(this);
+
             if (IsMouseDown)
             {
+                PointF pagePoint0 = new PointF((float)(point.X / this.Bounds.Width * DisplayArea.Width + DisplayArea.Left), (float)(point.Y / this.Bounds.Height * DisplayArea.Height + DisplayArea.Top));
+                Debug.WriteLine($"Checking point [{pagePoint0.X}, {pagePoint0.Y}] for signature fields on page {PageNumber}");
+
                 if (PointerEventHandlersType == PointerEventHandlers.Pan || (PointerEventHandlersType == PointerEventHandlers.PanHighlight && CurrentMouseOperation == CurrentMouseOperations.Pan))
                 {
-
-                    Point point = e.GetPosition(this);
-
                     double deltaX = (-point.X + MouseDownPoint.X) / this.Bounds.Width * DisplayArea.Width;
                     double deltaY = (-point.Y + MouseDownPoint.Y) / this.Bounds.Height * DisplayArea.Height;
 
@@ -1363,13 +1519,9 @@ namespace MuPDFCore.MuPDFRenderer
 
                     SetDisplayAreaNowInternal(target);
                     this.Cursor = new Cursor(StandardCursorType.SizeAll);
-
                 }
                 else if (PointerEventHandlersType == PointerEventHandlers.Highlight || (PointerEventHandlersType == PointerEventHandlers.PanHighlight && CurrentMouseOperation == CurrentMouseOperations.Highlight))
                 {
-
-                    Point point = e.GetPosition(this);
-
                     PointF pagePoint = new PointF((float)(point.X / this.Bounds.Width * DisplayArea.Width + DisplayArea.Left), (float)(point.Y / this.Bounds.Height * DisplayArea.Height + DisplayArea.Top));
 
                     MuPDFStructuredTextAddress? address = StructuredTextPage?.GetClosestHitAddress(pagePoint, false);
@@ -1390,8 +1542,6 @@ namespace MuPDFCore.MuPDFRenderer
             {
                 if (PointerEventHandlersType == PointerEventHandlers.Highlight || PointerEventHandlersType == PointerEventHandlers.PanHighlight)
                 {
-                    Point point = e.GetPosition(this);
-
                     PointF pagePoint = new PointF((float)(point.X / this.Bounds.Width * DisplayArea.Width + DisplayArea.Left), (float)(point.Y / this.Bounds.Height * DisplayArea.Height + DisplayArea.Top));
 
                     MuPDFStructuredTextAddress? address = StructuredTextPage?.GetHitAddress(pagePoint, false);
@@ -1410,12 +1560,20 @@ namespace MuPDFCore.MuPDFRenderer
                     this.Cursor = new Cursor(StandardCursorType.Arrow);
                 }
 
+                if (this.EnableSignatureDetection)
+                {
+                    SignatureFieldInfo hoveredField = GetSignatureFieldAtPoint(point);
+                    if (hoveredField != HoveredSignatureField)
+                    {
+                        HoveredSignatureField = hoveredField;
+                        this.InvalidateVisual();
+                    }
+                }
+
                 if (this.ActivateLinks)
                 {
                     if (this.Document.Pages[this.PageNumber].Links?.Count > 0)
                     {
-                        Point point = e.GetPosition(this);
-
                         MuPDFLinks links = this.Document.Pages[this.PageNumber].Links;
 
                         foreach (MuPDFLink link in links)
@@ -1618,6 +1776,20 @@ namespace MuPDFCore.MuPDFRenderer
                             }
                         }
                     }
+                }
+
+                // Draw signature field hover rectangle
+                if (this.EnableSignatureDetection && this.HoveredSignatureField != null && this.HoveredSignatureField.PageNumber == this.PageNumber)
+                {
+                    Point topLeft = new Point((this.HoveredSignatureField.Rectangle.Left - this.DisplayArea.Left) * this.Bounds.Width / this.DisplayArea.Width, 
+                                            (this.HoveredSignatureField.Rectangle.Top - this.DisplayArea.Top) * this.Bounds.Height / this.DisplayArea.Height);
+                    Point bottomRight = new Point((this.HoveredSignatureField.Rectangle.Right - this.DisplayArea.Left) * this.Bounds.Width / this.DisplayArea.Width, 
+                                                (this.HoveredSignatureField.Rectangle.Bottom - this.DisplayArea.Top) * this.Bounds.Height / this.DisplayArea.Height);
+
+                    // Draw a semi-transparent rectangle to highlight the signature field
+                    var hoverBrush = new SolidColorBrush(Color.FromArgb(80, 255, 255, 0)); // Semi-transparent yellow
+                    var hoverPen = new Pen(new SolidColorBrush(Color.FromRgb(255, 165, 0)), 2); // Orange border
+                    context.DrawRectangle(hoverBrush, hoverPen, new Rect(topLeft, bottomRight));
                 }
             }
         }
