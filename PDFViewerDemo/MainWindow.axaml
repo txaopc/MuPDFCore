@@ -153,7 +153,7 @@
 					<Button Click="ContainClicked" Grid.Column="1" Margin="10, 0, 0, 0">Contain</Button>
 				</Grid>
 
-				<Button Grid.Row="5" Margin="0, 5, 0, 5" Click="CopyClicked">Copy selected text...</Button>
+				<Button Grid.Row="5" Margin="0, 5, 0, 5" Click="">Copy selected text...</Button>
 
 				<TextBox Grid.Row="6" Margin="0, 5, 0, 5" Watermark="Search regex..." Name="SearchBox"></TextBox>
 
@@ -163,7 +163,7 @@
 						<ColumnDefinition Width="1*" />
 					</Grid.ColumnDefinitions>
 					<!--Highlight all matches of the search regex.-->
-					<Button Click="SearchClicked" Margin="0, 0, 10, 0">Search</Button>
+					<Button Click="" Margin="0, 0, 10, 0">Search</Button>
 
 					<!--Clear highlighted regions.-->
 					<Button Click="ClearClicked" Grid.Column="1" Margin="10, 0, 0, 0">Clear</Button>

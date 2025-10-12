@@ -641,12 +641,8 @@ namespace PDFViewerDemo
                 }
                 // End of test code
 
-                this.FindControl<PDFRenderer>("MuPDFRenderer").SetFilePath(localPath);
 
                 this.FindControl<PDFRenderer>("MuPDFRenderer").ZoomEnabled = true;
-                this.FindControl<PDFRenderer>("MuPDFRenderer").PageNavigationEnabled = true;
-                this.FindControl<PDFRenderer>("MuPDFRenderer").EnableSignatureDetection = true;
-                this.FindControl<PDFRenderer>("MuPDFRenderer").DrawSignatureFields = true;
             }
         }
 
@@ -1207,97 +1203,97 @@ namespace PDFViewerDemo
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void CopyClicked(object sender, RoutedEventArgs e)
-        {
-            //Check whether an owner password is required to allow users to copy content from the document.
-            if (Document.RestrictionState == RestrictionState.Restricted && Document.Restrictions.HasFlag(DocumentRestrictions.Copy))
-            {
-                bool success;
+        //private async void CopyClicked(object sender, RoutedEventArgs e)
+        //{
+        //    //Check whether an owner password is required to allow users to copy content from the document.
+        //    if (Document.RestrictionState == RestrictionState.Restricted && Document.Restrictions.HasFlag(DocumentRestrictions.Copy))
+        //    {
+        //        bool success;
 
-                //Try using the cached password.
-                if (!string.IsNullOrEmpty(OwnerPassword))
-                {
-                    //Try unlocking the document with the cached user password.
-                    bool unlockResult = Document.TryUnlock(OwnerPassword, out PasswordTypes pswType);
+        //        //Try using the cached password.
+        //        if (!string.IsNullOrEmpty(OwnerPassword))
+        //        {
+        //            //Try unlocking the document with the cached user password.
+        //            bool unlockResult = Document.TryUnlock(OwnerPassword, out PasswordTypes pswType);
 
-                    //Check if the password is correct.
-                    if (unlockResult)
-                    {
-                        //The password is correct.
+        //            //Check if the password is correct.
+        //            if (unlockResult)
+        //            {
+        //                //The password is correct.
 
-                        //Check that the cached owner password is still the owner password and that the document is thus unlocked.
-                        if (pswType.HasFlag(PasswordTypes.Owner) && Document.RestrictionState == RestrictionState.Unlocked)
-                        {
-                            //All is fine.
-                            success = true;
-                        }
-                        else
-                        {
-                            //The cached owner password is now the user password. We need a new password.
-                            success = false;
-                        }
-                    }
-                    else
-                    {
-                        //The cached owner password is no longer correct. We need a new password.
-                        success = false;
-                    }
-                }
-                else
-                {
-                    success = false;
-                }
+        //                //Check that the cached owner password is still the owner password and that the document is thus unlocked.
+        //                if (pswType.HasFlag(PasswordTypes.Owner) && Document.RestrictionState == RestrictionState.Unlocked)
+        //                {
+        //                    //All is fine.
+        //                    success = true;
+        //                }
+        //                else
+        //                {
+        //                    //The cached owner password is now the user password. We need a new password.
+        //                    success = false;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                //The cached owner password is no longer correct. We need a new password.
+        //                success = false;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            success = false;
+        //        }
 
-                //If we need a new password, ask the user for it.
-                if (!success)
-                {
-                    //Ask the user for the password.
-                    PasswordWindow pwdWin = new PasswordWindow();
-                    string password = await pwdWin.ShowDialog<string>(this);
+        //        //If we need a new password, ask the user for it.
+        //        if (!success)
+        //        {
+        //            //Ask the user for the password.
+        //            PasswordWindow pwdWin = new PasswordWindow();
+        //            string password = await pwdWin.ShowDialog<string>(this);
 
-                    if (string.IsNullOrEmpty(password))
-                    {
-                        //The user did not provide a password. The text cannot be copied.
-                        await new DialogWindow("Text cannot be copied without the owner password!").ShowDialog(this);
-                        return;
-                    }
-                    else
-                    {
-                        //The user provided a password. Try unlocking the document with the password.
-                        bool unlockResult = Document.TryUnlock(password, out PasswordTypes pswType);
+        //            if (string.IsNullOrEmpty(password))
+        //            {
+        //                //The user did not provide a password. The text cannot be copied.
+        //                await new DialogWindow("Text cannot be copied without the owner password!").ShowDialog(this);
+        //                return;
+        //            }
+        //            else
+        //            {
+        //                //The user provided a password. Try unlocking the document with the password.
+        //                bool unlockResult = Document.TryUnlock(password, out PasswordTypes pswType);
 
-                        //Check if the password is correct.
-                        if (unlockResult)
-                        {
-                            //The password is correct.
+        //                //Check if the password is correct.
+        //                if (unlockResult)
+        //                {
+        //                    //The password is correct.
 
-                            //Check that the user provided the owner password (and not the user password) and that the document is thus unlocked.
-                            if (pswType.HasFlag(PasswordTypes.Owner) && Document.RestrictionState == RestrictionState.Unlocked)
-                            {
-                                //All is fine.
-                                success = true;
-                                OwnerPassword = password;
-                            }
-                            else
-                            {
-                                //The user provided the user password instead of the owner password. The text cannot be copied.
-                                await new DialogWindow("The password corresponds to the \"user\" password for the document, but the \"owner\" password is instead required!").ShowDialog(this);
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            //The user provided an incorrect password. The text cannot be copied.
-                            await new DialogWindow("The password is incorrect!").ShowDialog(this);
-                            return;
-                        }
-                    }
-                }
-            }
+        //                    //Check that the user provided the owner password (and not the user password) and that the document is thus unlocked.
+        //                    if (pswType.HasFlag(PasswordTypes.Owner) && Document.RestrictionState == RestrictionState.Unlocked)
+        //                    {
+        //                        //All is fine.
+        //                        success = true;
+        //                        OwnerPassword = password;
+        //                    }
+        //                    else
+        //                    {
+        //                        //The user provided the user password instead of the owner password. The text cannot be copied.
+        //                        await new DialogWindow("The password corresponds to the \"user\" password for the document, but the \"owner\" password is instead required!").ShowDialog(this);
+        //                        return;
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    //The user provided an incorrect password. The text cannot be copied.
+        //                    await new DialogWindow("The password is incorrect!").ShowDialog(this);
+        //                    return;
+        //                }
+        //            }
+        //        }
+        //    }
 
-            string selection = this.FindControl<PDFRenderer>("MuPDFRenderer").GetSelectedText() ?? "";
-            await GetTopLevel(this).Clipboard.SetTextAsync(selection);
-        }
+        //    string selection = this.FindControl<PDFRenderer>("MuPDFRenderer").GetSelectedText() ?? "";
+        //    await GetTopLevel(this).Clipboard.SetTextAsync(selection);
+        //}
 
         /// <summary>
         /// Invoked when a key is pressed.
@@ -1306,15 +1302,15 @@ namespace PDFViewerDemo
         /// <param name="e"></param>
         private async void WindowKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.C)
-            {
-                string selection = this.FindControl<PDFRenderer>("MuPDFRenderer").GetSelectedText() ?? "";
-                await GetTopLevel(this).Clipboard.SetTextAsync(selection);
-            }
-            else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.A)
-            {
-                this.FindControl<PDFRenderer>("MuPDFRenderer").SelectAll();
-            }
+            //if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.C)
+            //{
+            //    string selection = this.FindControl<PDFRenderer>("MuPDFRenderer").GetSelectedText() ?? "";
+            //    await GetTopLevel(this).Clipboard.SetTextAsync(selection);
+            //}
+            //else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.A)
+            //{
+            //    this.FindControl<PDFRenderer>("MuPDFRenderer").SelectAll();
+            //}
         }
 
         /// <summary>
@@ -1322,14 +1318,14 @@ namespace PDFViewerDemo
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void SearchClicked(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                this.FindControl<PDFRenderer>("MuPDFRenderer").Search(new Regex(this.FindControl<TextBox>("SearchBox").Text));
-            }
-            catch (ArgumentException) { }
-        }
+        //private void SearchClicked(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        this.FindControl<PDFRenderer>("MuPDFRenderer").Search(new Regex(this.FindControl<TextBox>("SearchBox").Text));
+        //    }
+        //    catch (ArgumentException) { }
+        //}
 
         /// <summary>
         /// Invoked when the "Clear" button is clicked.
