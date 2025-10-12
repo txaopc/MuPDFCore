@@ -1,0 +1,81 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>../strong_name_key.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Data\Annotation.pdf" />
+    <None Remove="Data\basic-v3plus2.epub" />
+    <None Remove="Data\eng.traineddata" />
+    <None Remove="Data\LλиՀქカかעاދदবਗગଓதతಕമසไမᠮབລខᑐᑯᒐᖃግ조한汉漢.pdf" />
+    <None Remove="Data\mupdf_explored.pdf" />
+    <None Remove="Data\NoughtsCrosses.pdf" />
+    <None Remove="Data\Sample-owner.pdf" />
+    <None Remove="Data\Sample-user-owner.pdf" />
+    <None Remove="Data\Sample-user.pdf" />
+    <None Remove="Data\Sample.CMYK.pdf" />
+    <None Remove="Data\Sample.epub" />
+    <None Remove="Data\Sample.Gray.pdf" />
+    <None Remove="Data\Sample.OCG.pdf" />
+    <None Remove="Data\Sample.OCGTree.pdf" />
+    <None Remove="Data\Sample.PageBoxes.pdf" />
+    <None Remove="Data\Sample.pdf" />
+    <None Remove="Data\Sample.png" />
+    <None Remove="Data\Sample.RGB.pdf" />
+    <None Remove="Data\VectSharp.Markdown.pdf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Data\eng.traineddata">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\Annotation.pdf" />
+    <EmbeddedResource Include="Data\basic-v3plus2.epub" />
+    <EmbeddedResource Include="Data\LλиՀქカかעاދदবਗગଓதతಕമසไမᠮབລខᑐᑯᒐᖃግ조한汉漢.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Data\mupdf_explored.pdf" />
+    <EmbeddedResource Include="Data\NoughtsCrosses.pdf" />
+    <EmbeddedResource Include="Data\Sample-owner.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Data\Sample-user-owner.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Data\Sample-user.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Data\Sample.CMYK.pdf" />
+    <EmbeddedResource Include="Data\Sample.Gray.pdf" />
+    <EmbeddedResource Include="Data\Sample.OCG.pdf" />
+    <EmbeddedResource Include="Data\Sample.OCGTree.pdf" />
+    <EmbeddedResource Include="Data\Sample.PageBoxes.pdf" />
+    <EmbeddedResource Include="Data\Sample.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Data\Sample.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Data\Sample.RGB.pdf" />
+    <EmbeddedResource Include="Data\VectSharp.Markdown.pdf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.3" />
+    <PackageReference Include="coverlet.collector" Version="3.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <PackageReference Include="MuPDFCore" Version="2.0.1" />
+  </ItemGroup>
+
+</Project>
