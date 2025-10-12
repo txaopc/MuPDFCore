@@ -29,3 +29,4 @@ Tests/obj
 MuPDFCore.NativeAssets/*/bin
 MuPDFCore.NativeAssets/*/obj
 MuPDFCore.NativeAssets/NuGetPackages
+/MuPDFCore.sln
