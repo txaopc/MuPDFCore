@@ -412,6 +412,17 @@ namespace MuPDFCore.MuPDFRenderer
             set { SetValue(SignEnabledProperty, value); }
         }
 
+        public static readonly StyledProperty<int> SignatureTypeProperty = AvaloniaProperty.Register<PDFRenderer, int>(nameof(SignEnabled), 0);
+
+        /// <summary>
+        /// Whether the current instance has been initialised with a document to render or not. Read-only.
+        /// </summary>
+        public int SignatureType
+        {
+            get { return GetValue(SignatureTypeProperty); }
+            set { SetValue(SignatureTypeProperty, value); }
+        }
+
         /// <summary>
         /// Fired when the user clicks on signing button and pressed within the document.
         /// </summary>

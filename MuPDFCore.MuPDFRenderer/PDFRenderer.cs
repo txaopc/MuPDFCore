@@ -1371,7 +1371,7 @@ namespace MuPDFCore.MuPDFRenderer
 
                 if (this.SignEnabled)
                 {
-                    this.Cursor = new Cursor(StandardCursorType.Hand);
+                    this.Cursor = new Cursor(SignatureType == 0 ? StandardCursorType.Hand : StandardCursorType.Cross);
                 }
             }
         }
