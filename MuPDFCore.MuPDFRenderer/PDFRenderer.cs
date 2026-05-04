@@ -182,6 +182,11 @@ namespace MuPDFCore.MuPDFRenderer
         private const int WHEEL_MOVEMENT_COUNT = 5; // Typical threshold for one notch of wheel movement
 
         /// <summary>
+        /// The <see cref="SignatureField"/> that the mouse is currently hovering over, or null if none.
+        /// </summary>
+        private SignatureField _hoveredSignatureField = null;
+
+        /// <summary>
         /// Defines the current mouse operation.
         /// </summary>
         private enum CurrentMouseOperations
@@ -1111,12 +1116,48 @@ namespace MuPDFCore.MuPDFRenderer
         }
 
         /// <summary>
+        /// Finds the <see cref="SignatureField"/> at the given screen position, or null if none.
+        /// </summary>
+        /// <param name="screenPoint">The position in screen coordinates (relative to this control).</param>
+        /// <returns>The <see cref="SignatureField"/> under the point, or null.</returns>
+        private SignatureField HitTestSignatureField(Point screenPoint)
+        {
+            if (this.SignatureFields == null || !IsViewerInitialized)
+                return null;
+
+            // Convert screen point to page coordinates
+            double pageX = screenPoint.X / this.Bounds.Width * DisplayArea.Width + DisplayArea.Left;
+            double pageY = screenPoint.Y / this.Bounds.Height * DisplayArea.Height + DisplayArea.Top;
+
+            foreach (SignatureField field in this.SignatureFields)
+            {
+                if (field.PageNumber == this.PageNumber && field.Bounds.Contains(new Point(pageX, pageY)))
+                {
+                    return field;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Default handler for the PointerPressed event (start panning).
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void ControlPointerPressed(object sender, PointerPressedEventArgs e)
         {
+            // Check for signature field click first
+            if (e.GetCurrentPoint(this).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
+            {
+                SignatureField hitField = HitTestSignatureField(e.GetPosition(this));
+                if (hitField != null)
+                {
+                    SignatureFieldClicked?.Invoke(this, new SignatureFieldClickedEventArgs(hitField));
+                    return;
+                }
+            }
+
             if (this.ActivateLinks)
             {
                 if (this.Document.Pages[this.PageNumber].Links?.Count > 0)
@@ -1373,6 +1414,18 @@ namespace MuPDFCore.MuPDFRenderer
                 {
                     this.Cursor = new Cursor(SignatureType == 0 ? StandardCursorType.Hand : StandardCursorType.Cross);
                 }
+
+                // Signature field hover tracking
+                SignatureField hitField = HitTestSignatureField(e.GetPosition(this));
+                if (hitField != _hoveredSignatureField)
+                {
+                    _hoveredSignatureField = hitField;
+                    if (_hoveredSignatureField != null)
+                    {
+                        this.Cursor = new Cursor(StandardCursorType.Hand);
+                    }
+                    this.InvalidateVisual();
+                }
             }
         }
 
@@ -1545,6 +1598,22 @@ namespace MuPDFCore.MuPDFRenderer
 
                                 context.DrawRectangle(this.LinkBrush, this.LinkPen, new Rect(topLeft, bottomRight));
                             }
+                        }
+                    }
+                }
+
+                // Draw signature field overlays
+                if (this.SignatureFields != null)
+                {
+                    foreach (SignatureField field in this.SignatureFields)
+                    {
+                        if (field.PageNumber == this.PageNumber)
+                        {
+                            Point sigTopLeft = new Point((field.Bounds.Left - this.DisplayArea.Left) * this.Bounds.Width / this.DisplayArea.Width, (field.Bounds.Top - this.DisplayArea.Top) * this.Bounds.Height / this.DisplayArea.Height);
+                            Point sigBottomRight = new Point((field.Bounds.Right - this.DisplayArea.Left) * this.Bounds.Width / this.DisplayArea.Width, (field.Bounds.Bottom - this.DisplayArea.Top) * this.Bounds.Height / this.DisplayArea.Height);
+
+                            IBrush brush = (field == _hoveredSignatureField) ? this.SignatureFieldHoverBrush : this.SignatureFieldBrush;
+                            context.DrawRectangle(brush, this.SignatureFieldPen, new Rect(sigTopLeft, sigBottomRight));
                         }
                     }
                 }

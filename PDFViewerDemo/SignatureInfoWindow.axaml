@@ -1,0 +1,90 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Width="520" Height="480"
+        x:Class="PDFViewerDemo.SignatureInfoWindow"
+        Title="Digital Signature Information" FontSize="14" WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock FontSize="18" FontWeight="Bold" Name="HeaderText" Text="Digital Signature" />
+            <Separator Margin="0,8,0,0"/>
+        </StackPanel>
+
+        <!-- Signature Details -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="6" Name="DetailsPanel">
+                <!-- Signer Info -->
+                <TextBlock FontWeight="SemiBold" Text="Signer Information" Margin="0,4,0,2"/>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Field Name:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="FieldNameText" TextWrapping="Wrap"/>
+                </Grid>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Signer:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="SignerNameText" TextWrapping="Wrap"/>
+                </Grid>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Signing Time:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="SigningTimeText" TextWrapping="Wrap"/>
+                </Grid>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Reason:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="ReasonText" TextWrapping="Wrap"/>
+                </Grid>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Location:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="LocationText" TextWrapping="Wrap"/>
+                </Grid>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Contact Info:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="ContactInfoText" TextWrapping="Wrap"/>
+                </Grid>
+
+                <Separator Margin="0,8,0,4"/>
+
+                <!-- Certificate Info -->
+                <TextBlock FontWeight="SemiBold" Text="Certificate Information" Margin="0,4,0,2"/>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Subject:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="CertSubjectText" TextWrapping="Wrap"/>
+                </Grid>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Issuer:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="CertIssuerText" TextWrapping="Wrap"/>
+                </Grid>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Valid From:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="CertValidFromText" TextWrapping="Wrap"/>
+                </Grid>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Valid To:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="CertValidToText" TextWrapping="Wrap"/>
+                </Grid>
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Serial Number:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="CertSerialText" TextWrapping="Wrap"/>
+                </Grid>
+
+                <Separator Margin="0,8,0,4"/>
+
+                <!-- Document Coverage -->
+                <Grid ColumnDefinitions="140,*">
+                    <TextBlock Grid.Column="0" Text="Covers Whole Doc:" FontWeight="SemiBold" Foreground="Gray"/>
+                    <TextBlock Grid.Column="1" Name="CoversWholeDocText" TextWrapping="Wrap"/>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Close Button -->
+        <Button Grid.Row="2" Width="100" HorizontalAlignment="Center" Margin="0,12,0,0" Click="CloseButtonClicked">Close</Button>
+    </Grid>
+</Window>

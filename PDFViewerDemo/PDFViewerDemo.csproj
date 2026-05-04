@@ -18,6 +18,7 @@
     <PackageReference Include="Avalonia.Themes.Simple" Version="11.3.12" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.1" />
     <PackageReference Include="VectSharp.PDF" Version="3.2.0" />
+    <PackageReference Include="itext7" Version="7.2.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MuPDFCore.MuPDFRenderer\MuPDFCore.MuPDFRenderer.csproj" />

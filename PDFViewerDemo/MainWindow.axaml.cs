@@ -106,6 +106,11 @@ namespace PDFViewerDemo
         private List<(Rectangle Rect, Border Border)> _signatureBorders = new List<(Rectangle, Border)>();
 
         /// <summary>
+        /// The file path of the currently opened PDF document, used for signature extraction.
+        /// </summary>
+        private string _currentFilePath;
+
+        /// <summary>
         /// Default constructor.
         /// </summary>
         public MainWindow()
@@ -147,6 +152,9 @@ namespace PDFViewerDemo
                 }
             };
             _overlayCanvas = this.FindControl<Canvas>("OverlayCanvas");
+
+            // Subscribe to the SignatureFieldClicked event on the renderer.
+            this.FindControl<PDFRenderer>("MuPDFRenderer").SignatureFieldClicked += PDFRenderer_SignatureFieldClicked;
         }
 
         private void InitializeComponent()
@@ -608,39 +616,9 @@ namespace PDFViewerDemo
                 }
 
 
-                // Test code to create a signature border
-                try
-                {
-                    var pixelRect = new Rectangle
-                    {
-                        X0 = 12,
-                        Y0 = 12,
-                        X1 = 117,
-                        Y1 = 117,
-                    };
-
-                    // Tạo Border đỏ
-                    var border = new Border
-                    {
-                        BorderBrush = Brushes.Red,
-                        BorderThickness = new Thickness(1),
-                        Width = 105,
-                        Height = 105,
-                        IsVisible = true // Ẩn mặc định
-                    };
-                    Canvas.SetLeft(border, 12);
-                    Canvas.SetTop(border, 12);
-                    _overlayCanvas.Children.Add(border);
-
-                    _signatureBorders.Add((pixelRect, border));
-                }
-                catch (MuPDFException ex)
-                {
-                    // Xử lý lỗi, ví dụ: yêu cầu mật khẩu
-                    // Có thể hiển thị PasswordWindow như trong demo
-                }
-                // End of test code
-
+                // Extract digital signature fields from the PDF and feed them to the renderer.
+                _currentFilePath = localPath;
+                LoadSignatureFields();
 
                 this.FindControl<PDFRenderer>("MuPDFRenderer").ZoomEnabled = true;
             }
@@ -1439,6 +1417,49 @@ namespace PDFViewerDemo
                 case MuPDFLinkDestination.DestinationType.Internal:
                     await InitializeDocument(((MuPDFInternalLinkDestination)e.LinkDestination).PageNumber);
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Extracts digital signature fields from the currently opened PDF and feeds them to the renderer.
+        /// </summary>
+        private void LoadSignatureFields()
+        {
+            PDFRenderer renderer = this.FindControl<PDFRenderer>("MuPDFRenderer");
+
+            if (!string.IsNullOrEmpty(_currentFilePath) && File.Exists(_currentFilePath))
+            {
+                try
+                {
+                    List<SignatureField> fields = SignatureHelper.ExtractSignatureFields(_currentFilePath);
+                    renderer.SignatureFields = fields.Count > 0 ? fields : null;
+
+                    if (fields.Count > 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Loaded {fields.Count} digital signature field(s) from the PDF.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error loading signature fields: {ex.Message}");
+                    renderer.SignatureFields = null;
+                }
+            }
+            else
+            {
+                renderer.SignatureFields = null;
+            }
+        }
+
+        /// <summary>
+        /// Invoked when the user clicks on a digital signature field overlay in the renderer.
+        /// </summary>
+        private async void PDFRenderer_SignatureFieldClicked(object sender, SignatureFieldClickedEventArgs e)
+        {
+            if (e.SignatureField != null)
+            {
+                SignatureInfoWindow infoWindow = new SignatureInfoWindow(e.SignatureField);
+                await infoWindow.ShowDialog(this);
             }
         }
     }

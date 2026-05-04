@@ -427,6 +427,63 @@ namespace MuPDFCore.MuPDFRenderer
         /// Fired when the user clicks on signing button and pressed within the document.
         /// </summary>
         public event EventHandler<SignClickedEventArgs> SignClicked;
+
+        /// <summary>
+        /// Defines the <see cref="SignatureFields"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEnumerable<SignatureField>> SignatureFieldsProperty = AvaloniaProperty.Register<PDFRenderer, IEnumerable<SignatureField>>(nameof(SignatureFields), null);
+        /// <summary>
+        /// A collection of <see cref="SignatureField"/>s to display on the current page. Only fields matching the current <see cref="PageNumber"/> will be rendered.
+        /// </summary>
+        public IEnumerable<SignatureField> SignatureFields
+        {
+            get { return GetValue(SignatureFieldsProperty); }
+            set { SetValue(SignatureFieldsProperty, value); }
+        }
+
+        /// <summary>
+        /// Defines the <see cref="SignatureFieldBrush"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> SignatureFieldBrushProperty = AvaloniaProperty.Register<PDFRenderer, IBrush>(nameof(SignatureFieldBrush), new SolidColorBrush(Color.FromArgb(30, 0, 128, 255)));
+        /// <summary>
+        /// The brush used to draw signature field overlays in their normal (non-hovered) state.
+        /// </summary>
+        public IBrush SignatureFieldBrush
+        {
+            get { return GetValue(SignatureFieldBrushProperty); }
+            set { SetValue(SignatureFieldBrushProperty, value); }
+        }
+
+        /// <summary>
+        /// Defines the <see cref="SignatureFieldHoverBrush"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> SignatureFieldHoverBrushProperty = AvaloniaProperty.Register<PDFRenderer, IBrush>(nameof(SignatureFieldHoverBrush), new SolidColorBrush(Color.FromArgb(80, 0, 128, 255)));
+        /// <summary>
+        /// The brush used to draw signature field overlays when the mouse is hovering over them.
+        /// </summary>
+        public IBrush SignatureFieldHoverBrush
+        {
+            get { return GetValue(SignatureFieldHoverBrushProperty); }
+            set { SetValue(SignatureFieldHoverBrushProperty, value); }
+        }
+
+        /// <summary>
+        /// Defines the <see cref="SignatureFieldPen"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IPen> SignatureFieldPenProperty = AvaloniaProperty.Register<PDFRenderer, IPen>(nameof(SignatureFieldPen), new Pen(Color.FromArgb(180, 0, 100, 220).ToUInt32(), 1.5));
+        /// <summary>
+        /// The pen used to draw the border of signature field overlays.
+        /// </summary>
+        public IPen SignatureFieldPen
+        {
+            get { return GetValue(SignatureFieldPenProperty); }
+            set { SetValue(SignatureFieldPenProperty, value); }
+        }
+
+        /// <summary>
+        /// Fired when the user clicks on a digital signature field in the document.
+        /// </summary>
+        public event EventHandler<SignatureFieldClickedEventArgs> SignatureFieldClicked;
     }
 
     /// <summary>
